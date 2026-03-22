@@ -15,6 +15,25 @@ const mds = (D: np.NDArray, k = 2) => {
     return topEigVecs.multiply(topEigVals.sqrt())
 }
 
+const stress =
+(originalD: np.NDArray) => 
+(coords: np.NDArray) => {
+    const n = originalD.shape[0]
+
+    const sumSq = np.array(coords.power(2).sum(1)).reshape([n, 1])
+    
+    const distSq = sumSq
+        .add(sumSq.transpose())
+        .subtract(coords.matmul(coords.transpose()).multiply(2))
+    
+    const predictedD = np.maximum(distSq, 0).sqrt()
+
+    const num = originalD.subtract(predictedD).power(2).sum()
+    const den = originalD.power(2).sum()
+
+    return Math.sqrt(num / den)
+}
+
 const distMatrix = np.array([
     [0, 1, 1],
     [1, 0, 1],
@@ -23,3 +42,4 @@ const distMatrix = np.array([
 
 const coords = mds(distMatrix, 2)
 console.log(coords.toArray())
+console.log(stress(distMatrix)(coords))
